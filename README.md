@@ -20,6 +20,8 @@ unbalanced helps you manage space in your Unraid array, via two operating modes:
 
 - **Gather**<br/> Consolidate data from a user share into a single disk
 
+- **Level**<br/> Even out a set of disks so they all end up about the same percentage full
+
 It's versatile and can serve multiple purposes, based on your needs.
 
 Some of the use cases are:
@@ -127,6 +129,30 @@ A star next to a drive means that the folder is present there.
 
 Choose a target disk, then click Move to start the transfer operation.
 ![Transfer](meta/images/gather-transfer.png)
+
+## LEVEL Instructions
+
+Level spreads the folders you choose across the disks you choose, so every disk ends up as close as possible to the same
+percentage full, even when the disks are different sizes. It's handy after adding new, empty disks to an array.
+
+Everything directly inside a chosen folder is treated as one unit and is always kept whole on a single disk, much like
+Unraid's split level setting. Choose `tvshows` and each show (with all its seasons) stays on one disk, so watching a show
+only spins up that disk. Choose `tvshows/Billions` instead and its seasons become the units.
+
+It involves the following steps:
+
+**1 - Select** <br/>
+Choose one or more folders and two or more disks.
+
+**2 - Plan** <br/>
+unbalanced works out the average fill of the chosen disks and plans moves from the disks above it to the disks below it.
+Each move is the one that brings the disks closest to even, so large folders go first and few moves are needed. A disk
+either gives or receives data, never both, and disks stop receiving before they reach your reserved space. A folder
+that is already split across several disks is moved whole onto one disk if it's moved at all.
+
+**3 - Review & Move** <br/>
+Check the current and planned fill of each disk, click a disk to see what it will receive, then click **MOVE**.
+![Review](meta/images/level-review.png)
 
 ## Installation
 

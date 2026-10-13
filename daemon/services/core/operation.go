@@ -296,7 +296,7 @@ func (c *Core) commandCompleted(operation *domain.Operation, command *domain.Com
 }
 
 func (c *Core) handleItemDeletion(operation *domain.Operation, command *domain.Command) {
-	if !operation.DryRun && (operation.OpKind == common.OpScatterMove || operation.OpKind == common.OpGatherMove) {
+	if !operation.DryRun && isMove(operation.OpKind) {
 		// the command was flagged due to an error, don't delete the source file/folder in these cases
 		if command.Status == common.CmdFlagged {
 			msg := fmt.Sprintf("skipping:deletion:(rsync command was flagged):(%s)", filepath.Join(command.Dst, command.Entry))
@@ -314,7 +314,7 @@ func (c *Core) handleItemDeletion(operation *domain.Operation, command *domain.C
 		packet := &domain.Packet{Topic: common.EventTransferProgress, Payload: operation}
 		c.ctx.Hub.Pub(packet, "socket:broadcast")
 
-		removed, pruned, err := removeTransferredSource(command, operation.OpKind == common.OpGatherMove)
+		removed, pruned, err := removeTransferredSource(command, prunesParents(operation.OpKind))
 		if err != nil {
 			msg := fmt.Sprintf("Unable to remove source folder (%s): %s", filepath.Join(command.Src, command.Entry), err)
 			operation.Line = msg
@@ -476,7 +476,7 @@ func (c *Core) replay(operationID string) {
 	c.state.Unraid = c.refreshUnraid()
 
 	opName := "Copy"
-	if c.state.Operation.OpKind == common.OpScatterMove || c.state.Operation.OpKind == common.OpGatherMove {
+	if isMove(c.state.Operation.OpKind) {
 		opName = "Move"
 	}
 

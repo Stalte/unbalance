@@ -46,7 +46,9 @@ export const Operation: React.FunctionComponent<Props> = ({
   const safe = first;
   const canBeFlagged =
     safe &&
-    (current.opKind === Op.ScatterMove || current.opKind === Op.GatherMove);
+    (current.opKind === Op.ScatterMove ||
+      current.opKind === Op.GatherMove ||
+      current.opKind === Op.LevelMove);
 
   const onRemoveSource = (command: ICommand) =>
     onConfirm({

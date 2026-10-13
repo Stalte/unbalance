@@ -7,6 +7,7 @@ export const operationKindToName: Record<number, string> = {
   [Op.ScatterCopy]: 'Scatter / Copy',
   [Op.ScatterValidate]: 'Scatter / Validate',
   [Op.GatherMove]: 'Gather / Move',
+  [Op.LevelMove]: 'Level / Move',
 };
 
 export const getCommandStatus = (status: CommandStatus): React.ReactNode => {

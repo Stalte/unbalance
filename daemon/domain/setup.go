@@ -9,3 +9,8 @@ type ScatterSetup struct {
 type GatherSetup struct {
 	Selected []string `json:"selected"`
 }
+
+type LevelSetup struct {
+	Disks    []string `json:"disks"`
+	Selected []string `json:"selected"`
+}

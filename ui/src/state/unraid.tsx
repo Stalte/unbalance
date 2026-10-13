@@ -18,6 +18,7 @@ import {
 import { getRouteFromStatus } from '~/helpers/routes';
 import { useScatterStore } from '~/state/scatter';
 import { useGatherStore } from '~/state/gather';
+import { useLevelStore } from '~/state/level';
 import { createMachine, StateMachine } from '~/helpers/sm';
 
 interface UnraidStore {
@@ -56,6 +57,11 @@ interface UnraidStore {
     gatherPlanEnded: (payload: Plan) => void;
     gatherPlanCancelled: (payload: string) => void;
     gatherMove: () => void;
+    levelPlan: () => void;
+    levelProgress: (payload: string) => void;
+    levelPlanEnded: (payload: Plan) => void;
+    levelPlanCancelled: (payload: string) => void;
+    levelMove: () => void;
     removeSource: (
       operation: Operation | undefined,
       command: Command | undefined,
@@ -80,6 +86,10 @@ const mapEventToAction: { [x: string]: string } = {
   [Topic.EventGatherPlanProgress]: 'gatherProgress',
   [Topic.EventGatherPlanEnded]: 'gatherPlanEnded',
   [Topic.EventGatherPlanCancelled]: 'gatherPlanCancelled',
+  [Topic.EventLevelPlanStarted]: 'levelProgress',
+  [Topic.EventLevelPlanProgress]: 'levelProgress',
+  [Topic.EventLevelPlanEnded]: 'levelPlanEnded',
+  [Topic.EventLevelPlanCancelled]: 'levelPlanCancelled',
   [Topic.EventOperationError]: 'operationError',
 };
 
@@ -162,6 +172,36 @@ export const useUnraidStore = create<UnraidStore>()(
             console.log('transition action for "prev" in "/gather/plan" state');
             get().actions.resetPlan();
           },
+        },
+      },
+      '/level/select': {
+        next: {
+          target: '/level/plan',
+          action() {
+            get().actions.levelPlan();
+          },
+        },
+      },
+      '/level/plan': {
+        next: {
+          target: '/level/transfer/review',
+          action() {},
+        },
+        prev: {
+          target: '/level/select',
+          action() {
+            get().actions.resetPlan();
+          },
+        },
+      },
+      '/level/transfer/review': {
+        next: {
+          target: '/level/transfer/operation',
+          action() {},
+        },
+        prev: {
+          target: '/level/plan',
+          action() {},
         },
       },
       '/gather/transfer/targets': {
@@ -537,6 +577,86 @@ export const useUnraidStore = create<UnraidStore>()(
 
           get().navigate?.(route);
         },
+        levelPlan: () => {
+          set((state) => {
+            state.status = Op.LevelPlan;
+            state.logs = [];
+            state.plan = null;
+            state.error = '';
+          });
+
+          const level = useLevelStore.getState();
+          level.actions.setBinDisk('');
+          const config = {
+            disks: Object.keys(level.disks),
+            selected: Object.values(level.selected),
+          };
+          const socket = get().socket;
+          if (!socket) {
+            return;
+          }
+
+          socket.send(
+            JSON.stringify({
+              topic: Topic.CommandLevelPlanStart,
+              payload: config,
+            }),
+          );
+        },
+        levelProgress: (payload: string) => {
+          set((state) => {
+            state.logs.push(...payload.split('\n'));
+            if (state.logs.length > 2000) {
+              state.logs.splice(0, state.logs.length - 2000);
+            }
+          });
+        },
+        levelPlanEnded: (payload: Plan) => {
+          set((state) => {
+            state.status = Op.Neutral;
+            state.plan = payload;
+            state.error = '';
+          });
+        },
+        levelPlanCancelled: (payload: string) => {
+          set((state) => {
+            state.status = Op.Neutral;
+            state.plan = null;
+            state.logs.push(payload);
+          });
+
+          get().navigate?.('/level/select');
+        },
+        levelMove: () => {
+          const machine = get().machine;
+          const route = machine.transition(get().route, 'next');
+          const socket = get().socket;
+          const plan = get().plan;
+
+          if (!plan || !socket) {
+            return;
+          }
+
+          set((state) => {
+            state.operation = null;
+            state.logs = [];
+            state.status = Op.LevelMove;
+            state.error = '';
+          });
+
+          socket.send(
+            JSON.stringify({
+              topic: Topic.CommandLevelMove,
+              payload: { planID: plan.id },
+            }),
+          );
+
+          set((state) => {
+            state.plan = null;
+          });
+
+          get().navigate?.(route);
+        },
         removeSource: (
           operation: Operation | undefined,
           command: Command | undefined,
@@ -564,7 +684,11 @@ export const useUnraidStore = create<UnraidStore>()(
           );
 
           const flow =
-            operation.opKind === Op.ScatterMove ? 'scatter' : 'gather';
+            operation.opKind === Op.ScatterMove
+              ? 'scatter'
+              : operation.opKind === Op.LevelMove
+                ? 'level'
+                : 'gather';
 
           get().navigate?.(`/${flow}/transfer/operation`);
         },
@@ -595,7 +719,9 @@ export const useUnraidStore = create<UnraidStore>()(
             operation.opKind === Op.ScatterMove ||
             operation.opKind === Op.ScatterCopy
               ? 'scatter'
-              : 'gather';
+              : operation.opKind === Op.LevelMove
+                ? 'level'
+                : 'gather';
 
           get().navigate?.(`/${flow}/transfer/operation`);
         },

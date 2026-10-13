@@ -23,6 +23,8 @@ const (
 	OpScatterValidate = 4
 	OpGatherPlan      = 5
 	OpGatherMove      = 6
+	OpLevelPlan       = 7
+	OpLevelMove       = 8
 )
 
 const (
@@ -41,6 +43,13 @@ const (
 	EventGatherPlanEnded     = "gather:plan:ended"
 	EventGatherPlanCancelled = "gather:plan:cancelled"
 	CommandGatherMove        = "gather:move"
+
+	CommandLevelPlanStart   = "level:plan:start"
+	EventLevelPlanStarted   = "level:plan:started"
+	EventLevelPlanProgress  = "level:plan:progress"
+	EventLevelPlanEnded     = "level:plan:ended"
+	EventLevelPlanCancelled = "level:plan:cancelled"
+	CommandLevelMove        = "level:move"
 
 	EventTransferStarted  = "transfer:started"
 	EventTransferProgress = "transfer:progress"

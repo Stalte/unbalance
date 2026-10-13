@@ -416,16 +416,22 @@ func (c *Core) printDisks(disks []*domain.Disk, blockSize uint64) {
 
 // HELPER FUNCTIONS
 func getName(status uint64) string {
-	if status == common.OpScatterPlan {
+	switch status {
+	case common.OpScatterPlan:
 		return "scatterPlan"
+	case common.OpLevelPlan:
+		return "levelPlan"
 	}
 
 	return "gatherPlan"
 }
 
 func getTopic(status uint64) string {
-	if status == common.OpScatterPlan {
+	switch status {
+	case common.OpScatterPlan:
 		return common.EventScatterPlanProgress
+	case common.OpLevelPlan:
+		return common.EventLevelPlanProgress
 	}
 
 	return common.EventGatherPlanProgress
@@ -598,7 +604,7 @@ func sendmail(notify int, subject, message string, dryRun bool) (err error) {
 }
 
 func showPotentiallyPrunedItems(operation *domain.Operation, command *domain.Command) {
-	if operation.DryRun && operation.OpKind == common.OpGatherMove {
+	if operation.DryRun && prunesParents(operation.OpKind) {
 		parent := filepath.Dir(command.Entry)
 		if parent != "." {
 			logger.Blue("Would prune empty parent folders starting from (%s)", filepath.Join(command.Src, parent))
@@ -606,4 +612,14 @@ func showPotentiallyPrunedItems(operation *domain.Operation, command *domain.Com
 			logger.Blue("WONT PRUNE: (%s)", filepath.Join(command.Src, parent))
 		}
 	}
+}
+
+// isMove tells whether an operation removes the source once transferred
+func isMove(opKind uint64) bool {
+	return opKind == common.OpScatterMove || opKind == common.OpGatherMove || opKind == common.OpLevelMove
+}
+
+// prunesParents tells whether a move also removes the source's emptied parent folders
+func prunesParents(opKind uint64) bool {
+	return opKind == common.OpGatherMove || opKind == common.OpLevelMove
 }
