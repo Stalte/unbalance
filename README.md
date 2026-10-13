@@ -162,7 +162,7 @@ There are 2 ways to install this application
   unbalanced<br/> Click Install
 
 - Plugins Tab (manual)<br/> Go to the Plugins tab<br/> Click on Install Plugin<br/> Paste the following address in the
-  input field: <https://github.com/jbrodriguez/unbalance/releases/latest/download/unbalanced.plg><br/> Click Install
+  input field: <https://github.com/Stalte/unbalance/releases/latest/download/unbalanced.plg><br/> Click Install
 
 ## Running the app
 
