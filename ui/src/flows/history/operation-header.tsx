@@ -61,7 +61,9 @@ export const OperationHeader: React.FunctionComponent<Props> = ({
 
   const canBeFlagged =
     safe &&
-    (operation.opKind === Op.ScatterMove || operation.opKind === Op.GatherMove);
+    (operation.opKind === Op.ScatterMove ||
+      operation.opKind === Op.GatherMove ||
+      operation.opKind === Op.LevelMove);
 
   const onValidate = () =>
     onConfirm({

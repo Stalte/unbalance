@@ -8,12 +8,16 @@ export function getRouteFromStatus(status: Op): string {
       return '/scatter/plan';
     case Op.GatherPlan:
       return '/gather/plan';
+    case Op.LevelPlan:
+      return '/level/plan';
     case Op.ScatterMove:
     case Op.ScatterCopy:
     case Op.ScatterValidate:
       return '/scatter/transfer/operation';
     case Op.GatherMove:
       return '/gather/transfer/operation';
+    case Op.LevelMove:
+      return '/level/transfer/operation';
     default:
       return '/scatter/select';
   }
@@ -26,14 +30,19 @@ export const routeToStep = (route: string): number => {
     case '/scatter/select':
     case '/gather':
     case '/gather/select':
+    case '/level':
+    case '/level/select':
       return 1;
     case '/scatter/plan':
     case '/gather/plan':
+    case '/level/plan':
       return 2;
     case '/scatter/transfer/validation':
     case '/scatter/transfer/operation':
     case '/gather/transfer/targets':
     case '/gather/transfer/operation':
+    case '/level/transfer/review':
+    case '/level/transfer/operation':
       return 3;
     default:
       return 1;
@@ -58,6 +67,12 @@ export const getNextRoute = (route: string) => {
       return '/gather/plan';
     case '/gather/plan':
       return '/gather/transfer';
+    case '/level':
+      return '/level/select';
+    case '/level/select':
+      return '/level/plan';
+    case '/level/plan':
+      return '/level/transfer/review';
     case '/history':
       return '/history';
     case '/settings':

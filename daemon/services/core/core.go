@@ -88,6 +88,8 @@ func Create(ctx *domain.Context) *Core {
 			common.CommandScatterCopy,
 			common.CommandGatherPlanStart,
 			common.CommandGatherMove,
+			common.CommandLevelPlanStart,
+			common.CommandLevelMove,
 			common.CommandScatterValidate,
 			common.CommandRemoveSource,
 			common.CommandReplay,
@@ -189,6 +191,24 @@ func (c *Core) mailboxHandler() {
 				continue
 			}
 			go c.gatherMove(ref.PlanID, ref.Target)
+
+		case common.CommandLevelPlanStart:
+			var setup domain.LevelSetup
+			err := lib.Bind(packet.Payload, &setup)
+			if err != nil {
+				logger.Red("unable to unmarshal %s packet: %s", packet.Topic, err)
+				continue
+			}
+			c.levelPlanPrepare(setup)
+
+		case common.CommandLevelMove:
+			var ref planRef
+			err := lib.Bind(packet.Payload, &ref)
+			if err != nil {
+				logger.Red("unable to unmarshal %s packet: %s", packet.Topic, err)
+				continue
+			}
+			go c.levelMove(ref.PlanID)
 
 		case common.CommandScatterValidate:
 			var ref operationRef

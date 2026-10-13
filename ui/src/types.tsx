@@ -6,6 +6,8 @@ export enum Op {
   ScatterValidate = 4,
   GatherPlan = 5,
   GatherMove = 6,
+  LevelPlan = 7,
+  LevelMove = 8,
 }
 
 export type Step = 'idle' | 'select' | 'plan' | 'transfer';
@@ -217,6 +219,13 @@ export enum Topic {
   EventGatherPlanEnded = 'gather:plan:ended',
   EventGatherPlanCancelled = 'gather:plan:cancelled',
   CommandGatherMove = 'gather:move',
+
+  CommandLevelPlanStart = 'level:plan:start',
+  EventLevelPlanStarted = 'level:plan:started',
+  EventLevelPlanProgress = 'level:plan:progress',
+  EventLevelPlanEnded = 'level:plan:ended',
+  EventLevelPlanCancelled = 'level:plan:cancelled',
+  CommandLevelMove = 'level:move',
 
   EventTransferStarted = 'transfer:started',
   EventTransferProgress = 'transfer:progress',

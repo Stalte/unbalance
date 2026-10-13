@@ -19,6 +19,7 @@ type planFlow string
 const (
 	planFlowScatter planFlow = "scatter"
 	planFlowGather  planFlow = "gather"
+	planFlowLevel   planFlow = "level"
 )
 
 type planTicket struct {
